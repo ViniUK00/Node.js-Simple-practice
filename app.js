@@ -1,28 +1,27 @@
-const http = require('http'); // Import http
+const express = require('express');
+const bodyParser = require('body-parser'); // process data sent in an HTTP request body
+// middleware for parsing JSON, 
+// Text, URL-encoded, and raw data sets over an HTTP request body.
+const { urlencoded } = require('body-parser');
 
-const server = http.createServer((request, response) => { // creating server 
-    let body = []; 
-    request.on('data', (chunk) => {
-        body.push(chunk);
-    });
-    request.on('end', () => {
-        body = Buffer.concat(body).toString(); // Convert the respond to a readable file 
-        let userName = 'Uknown user'
-        if (body) { 
-            userName = body.split("=")[1]; // Splits the respond
-        }
+const app = express();
 
-        response.setHeader('Content-Type', 'text/html'); // Useful to create HTML elements
-        response.write(                    // Writing HTML file
-            `<h1>Hi ${userName}</h1>
-            <form method="POST" action="/">
-            <input type="text" name="userName">
-            <button type="submit">
-            </form>`);
-        response.end();
-    });
-    
-    
+app.set('view engine', 'ejs'); // Tell to express the parsing  should be EJS
+app.set('views', 'views') // Tell to express where to find the views
+
+app.use(bodyParser.urlencoded({extended: false}));
+// Middleware for parsing URL-encoded over an HTTP request body.
+
+app.use((req, res, next) => {
+    res.setHeader('Content-Type', 'text/html')
+    next();
 });
-server.listen(3000); // Local host server 3000
 
+app.use((req, res, next) => {
+    const userName = req.body.userName || 'Unknown user'
+    res.render("index", {
+      user: userName,
+    }); // Render EJS FILE NAMED INDEX
+});
+
+app.listen(3000);
